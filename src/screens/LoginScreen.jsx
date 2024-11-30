@@ -1,6 +1,6 @@
 import React from "react";
 
-const LoginPage = () => {
+const LoginScreen = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     // Handle login logic here
@@ -78,4 +78,4 @@ const styles = {
   },
 };
 
-export default LoginPage;
+export default LoginScreen;
