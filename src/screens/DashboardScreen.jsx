@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { auth } from "../firebaseConfig"; // Import your Firebase config
-import { getFirestore, doc, getDoc } from "firebase/firestore"; // Firestore imports
+import { getFirestore, doc, getDoc, collection, addDoc } from "firebase/firestore"; // Firestore imports
 import { signOut } from "firebase/auth";
 
 const DashboardScreen = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
+  const [title, setTitle] = useState("");
+  const [story, setStory] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
   const [fullName, setFullName] = useState("");
   const db = getFirestore(); // Initialize Firestore
 
@@ -32,24 +36,20 @@ const DashboardScreen = () => {
     fetchUserData();
   }, [db]);
 
-
   // Handle logout
   const handleLogout = async () => {
     await signOut(auth);
     window.location.reload(); // Redirect to the login screen
   };
-  
-;
 
-const handleAvatarClick = () => {
+  const handleAvatarClick = () => {
     setMenuOpen(!menuOpen);
   };
 
-
-  const handleOptionClick =async (option) => {
+  const handleOptionClick = async (option) => {
     setMenuOpen(false);
     if (option === "logout") {
-  await  handleLogout();
+      await handleLogout();
     } else if (option === "profile") {
       console.log("View Profile clicked");
       // Add view profile logic here
@@ -59,8 +59,43 @@ const handleAvatarClick = () => {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Strip the prefix (e.g., data:image/webp;base64,)
+        const base64Data = reader.result.split(",")[1];
+        setBase64Image(base64Data);
+      };
+      reader.readAsDataURL(file);
+      setSelectedImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title || !story || !base64Image) {
+      alert("Please fill in all fields and upload an image.");
+      return;
+    }
+
+    setLoading(true); // Start loading
+    try {
+      const storyData = {
+        author: fullName,
+        title,
+        story,
+        image: base64Image,
+      };
+      await addDoc(collection(db, "stories"), storyData);
+      alert("Story submitted successfully!");
+      setTitle("");
+      setStory("");
+      setBase64Image(null);
+      setSelectedImage(null);
+    } catch (error) {
+      console.error("Error submitting story:", error);
+      alert("Failed to submit story. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -70,7 +105,7 @@ const handleAvatarClick = () => {
       <header style={styles.navbar}>
         <h1 style={styles.navTitle}>KetiKatha</h1>
         <div style={styles.navRight}>
-          <span style={styles.welcomeText}>Welcome {fullName} !</span>
+          <span style={styles.welcomeText}>Welcome {fullName}!</span>
           <div style={styles.avatarContainer} onClick={handleAvatarClick}>
             <img
               src="https://via.placeholder.com/40"
@@ -94,12 +129,23 @@ const handleAvatarClick = () => {
       <main style={styles.contentWrapper}>
         <div style={styles.content}>
           <h2 style={styles.heading}>Create Story</h2>
-          <form style={styles.form}>
+          <form style={styles.form} onSubmit={handleSubmit}>
             <label style={styles.label}>Title</label>
-            <input type="text" placeholder="Enter title" style={styles.input} />
+            <input
+              type="text"
+              placeholder="Enter title"
+              style={styles.input}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
 
             <label style={styles.label}>Story</label>
-            <textarea placeholder="Write your story here..." style={styles.textarea}></textarea>
+            <textarea
+              placeholder="Write your story here..."
+              style={styles.textarea}
+              value={story}
+              onChange={(e) => setStory(e.target.value)}
+            ></textarea>
 
             <label style={styles.label}>Upload Image</label>
             <div>
@@ -116,8 +162,12 @@ const handleAvatarClick = () => {
               )}
             </div>
 
-            <button type="submit" style={styles.submitButton}>
-              Submit
+            <button type="submit" style={styles.submitButton} disabled={loading}>
+              {loading ? (
+                <div className="spinner" style={styles.spinner}></div>
+              ) : (
+                "Submit"
+              )}
             </button>
           </form>
         </div>
@@ -243,6 +293,9 @@ const styles = {
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
   },
   submitButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     padding: "12px",
     fontSize: "16px",
     backgroundColor: "#28a745",
@@ -250,7 +303,20 @@ const styles = {
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
+    position: "relative",
+    height: "40px",
   },
+
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid #f3f3f3",
+    borderTop: "2px solid #28a745",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+
+
 };
 
 export default DashboardScreen;
