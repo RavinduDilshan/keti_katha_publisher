@@ -6,21 +6,27 @@ const LoginScreen = ({ navigateToDashboard }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // State for spinner
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start spinner
+    setError(""); // Reset error
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigateToDashboard(); // Navigate to the dashboard after successful login
     } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false); // Stop spinner
     }
   };
 
   return (
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleLogin}>
-      <h2 style={styles.title}>KetiKatha Publisher</h2>
+        <h2 style={styles.title}>KetiKatha Publisher</h2>
         <h2 style={styles.title}>Login</h2>
         {error && <p style={styles.error}>{error}</p>}
         <input
@@ -39,8 +45,12 @@ const LoginScreen = ({ navigateToDashboard }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" style={styles.button}>
-          Login
+        <button type="submit" style={styles.button} disabled={loading}>
+          {loading ? (
+            <div style={styles.spinner}></div>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
     </div>
@@ -82,11 +92,27 @@ const styles = {
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
+    position: "relative",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid #ffffff",
+    borderTop: "2px solid transparent",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
   },
   error: {
     color: "red",
     marginBottom: "15px",
     fontSize: "14px",
+  },
+  "@keyframes spin": {
+    "0%": { transform: "rotate(0deg)" },
+    "100%": { transform: "rotate(360deg)" },
   },
 };
 
