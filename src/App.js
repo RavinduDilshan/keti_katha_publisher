@@ -1,12 +1,17 @@
-import logo from './logo.svg';
 import './App.css';
-import LoginScreen from './screens/LoginScreen'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoginScreen from './screens/LoginScreen';
+import DashboardScreen from './screens/DashboardScreen';
+
 
 function App() {
   return (
-    <div className="App">
-     <LoginScreen />
-    </div>
+    <Router>
+    <Routes>
+      <Route path="/" element={<LoginScreen />} />
+      <Route path="/dashboard" element={<DashboardScreen />} />
+    </Routes>
+  </Router>
   );
 }
 

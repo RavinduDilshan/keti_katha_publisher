@@ -1,10 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle login logic here
-    console.log("Form submitted");
+    // Add login validation logic here
+    navigate("/dashboard"); // Navigate to the Dashboard screen
   };
 
   return (
