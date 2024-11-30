@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 const DashboardScreen = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleAvatarClick = () => {
     setMenuOpen(!menuOpen);
@@ -15,6 +16,14 @@ const DashboardScreen = () => {
     } else if (option === "profile") {
       console.log("View Profile clicked");
       // Add view profile logic here
+    }
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImage(imageUrl);
     }
   };
 
@@ -45,7 +54,7 @@ const DashboardScreen = () => {
       {/* Centered Content */}
       <main style={styles.contentWrapper}>
         <div style={styles.content}>
-          <h2 style={styles.heading}>Publish Story</h2>
+          <h2 style={styles.heading}>Create Story</h2>
           <form style={styles.form}>
             <label style={styles.label}>Title</label>
             <input type="text" placeholder="Enter title" style={styles.input} />
@@ -54,9 +63,19 @@ const DashboardScreen = () => {
             <textarea placeholder="Write your story here..." style={styles.textarea}></textarea>
 
             <label style={styles.label}>Upload Image</label>
-            <button type="button" style={styles.uploadButton}>
-              Upload Image
-            </button>
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                style={styles.fileInput}
+                onChange={handleImageChange}
+              />
+              {selectedImage && (
+                <div style={styles.imagePreview}>
+                  <img src={selectedImage} alt="Preview" style={styles.previewImage} />
+                </div>
+              )}
+            </div>
 
             <button type="submit" style={styles.submitButton}>
               Submit
@@ -120,7 +139,7 @@ const styles = {
     cursor: "pointer",
   },
   contentWrapper: {
-    flex: 1, // Ensures the content takes up the available space below the navbar
+    flex: 1,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -159,18 +178,21 @@ const styles = {
     fontSize: "14px",
     border: "1px solid #ccc",
     borderRadius: "4px",
-    minHeight: "300px", // Increased height for the story input
-    resize: "vertical", // Allows only vertical resizing
-    overflow: "auto", // Ensures content doesn't overflow the container
+    minHeight: "300px",
+    resize: "vertical",
   },
-  uploadButton: {
-    padding: "6px 12px", // Smaller button
-    fontSize: "14px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
+  fileInput: {
+    marginBottom: "10px",
+  },
+  imagePreview: {
+    marginTop: "10px",
+    textAlign: "center",
+  },
+  previewImage: {
+    maxWidth: "100%",
+    maxHeight: "200px",
+    borderRadius: "8px",
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
   },
   submitButton: {
     padding: "12px",
