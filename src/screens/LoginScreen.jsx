@@ -1,39 +1,47 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig"; // Import your Firebase config
 
-const LoginScreen = () => {
-  const navigate = useNavigate();
+const LoginScreen = ({ navigateToDashboard }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Add login validation logic here
-    navigate("/dashboard"); // Navigate to the Dashboard screen
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigateToDashboard(); // Navigate to the dashboard after successful login
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.formContainer}>
-        <h2 style={styles.title}>Login To Your Account</h2>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            required
-            style={styles.input}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-            style={styles.input}
-          />
-          <button type="submit" style={styles.button}>
-            Login
-          </button>
-        </form>
-      </div>
+      <form style={styles.form} onSubmit={handleLogin}>
+        <h2 style={styles.title}>Login</h2>
+        {error && <p style={styles.error}>{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          style={styles.input}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          style={styles.input}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" style={styles.button}>
+          Login
+        </button>
+      </form>
     </div>
   );
 };
@@ -45,39 +53,39 @@ const styles = {
     alignItems: "center",
     height: "100vh",
     backgroundColor: "#f5f5f5",
-    margin: 0,
-  },
-  formContainer: {
-    width: "300px",
-    padding: "20px",
-    backgroundColor: "white",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-    borderRadius: "8px",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "20px",
   },
   form: {
-    display: "flex",
-    flexDirection: "column",
+    width: "300px",
+    padding: "20px",
+    borderRadius: "8px",
+    backgroundColor: "white",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    textAlign: "center",
+  },
+  title: {
+    fontSize: "24px",
+    marginBottom: "20px",
   },
   input: {
     width: "100%",
     padding: "10px",
     margin: "10px -10px",
-    border: "1px solid #ccc",
     borderRadius: "4px",
+    border: "1px solid #ccc",
   },
   button: {
     width: "100%",
     padding: "10px",
     backgroundColor: "#007bff",
-    border: "none",
     color: "white",
-    fontSize: "16px",
+    border: "none",
     borderRadius: "4px",
     cursor: "pointer",
+  },
+  error: {
+    color: "red",
+    marginBottom: "15px",
+    fontSize: "14px",
   },
 };
 
