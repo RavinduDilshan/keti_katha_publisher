@@ -1,18 +1,55 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { auth } from "../firebaseConfig"; // Import your Firebase config
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Firestore imports
+import { signOut } from "firebase/auth";
 
 const DashboardScreen = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const db = getFirestore(); // Initialize Firestore
 
-  const handleAvatarClick = () => {
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = auth.currentUser?.uid;
+        if (userId) {
+          const userDocRef = doc(db, "users", userId);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const { firstName, lastName } = userDoc.data();
+            setFullName(`${firstName} ${lastName}`);
+          } else {
+            console.error("No such document!");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [db]);
+
+
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut(auth);
+    window.location.reload(); // Redirect to the login screen
+  };
+  
+;
+
+const handleAvatarClick = () => {
     setMenuOpen(!menuOpen);
   };
 
-  const handleOptionClick = (option) => {
+
+  const handleOptionClick =async (option) => {
     setMenuOpen(false);
     if (option === "logout") {
-      console.log("Logout clicked");
-      // Add logout logic here
+  await  handleLogout();
     } else if (option === "profile") {
       console.log("View Profile clicked");
       // Add view profile logic here
@@ -32,12 +69,15 @@ const DashboardScreen = () => {
       {/* Navigation Bar */}
       <header style={styles.navbar}>
         <h1 style={styles.navTitle}>KetiKatha</h1>
-        <div style={styles.avatarContainer} onClick={handleAvatarClick}>
-          <img
-            src="https://via.placeholder.com/40"
-            alt="Avatar"
-            style={styles.avatar}
-          />
+        <div style={styles.navRight}>
+          <span style={styles.welcomeText}>Welcome {fullName} !</span>
+          <div style={styles.avatarContainer} onClick={handleAvatarClick}>
+            <img
+              src="https://via.placeholder.com/40"
+              alt="Avatar"
+              style={styles.avatar}
+            />
+          </div>
         </div>
         {menuOpen && (
           <div style={styles.menu}>
@@ -50,7 +90,6 @@ const DashboardScreen = () => {
           </div>
         )}
       </header>
-
       {/* Centered Content */}
       <main style={styles.contentWrapper}>
         <div style={styles.content}>
@@ -109,6 +148,15 @@ const styles = {
     fontSize: "20px",
     fontWeight: "bold",
     margin: 0,
+  },
+  navRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+  },
+  welcomeText: {
+    fontSize: "16px",
+    color: "#333",
   },
   avatarContainer: {
     position: "relative",
