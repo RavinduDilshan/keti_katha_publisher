@@ -20,6 +20,7 @@ const LoginScreen = ({ navigateToDashboard }) => {
   return (
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleLogin}>
+      <h2 style={styles.title}>KetiKatha Publisher</h2>
         <h2 style={styles.title}>Login</h2>
         {error && <p style={styles.error}>{error}</p>}
         <input
